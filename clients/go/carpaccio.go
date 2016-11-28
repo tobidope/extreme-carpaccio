@@ -10,5 +10,5 @@ type Order struct {
 }
 
 type Reply struct {
-	Quote float64 `json:"total"`
+	Quote float64 `json:"quote"`
 }

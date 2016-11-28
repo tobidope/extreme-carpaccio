@@ -1,4 +1,4 @@
----------package main
+package main
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/quote", handler)
 	http.HandleFunc("/feedback", func (rw http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
@@ -62,18 +62,9 @@ func getAgeRisk(order Order) float64 {
 	return sum
 }
 
-func handler(rw http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
-
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		fmt.Printf("error reading body: %v\n", err)
-		rw.WriteHeader(204)
-		return
-	}
-
+func calculateQuote(data []byte) Reply {
 	var order Order
-	json.Unmarshal(body, &order)
+	json.Unmarshal(data, &order)
 	timeLayout := "2006-01-02"
 	returnDate, _ :=  time.Parse(timeLayout, order.ReturnDate)
 	departureDate, _ := time.Parse(timeLayout, order.DepartureDate)
@@ -90,11 +81,26 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 	}
 	//quote := 0.0
 
-	fmt.Printf("Raw data %s\n", body)
+	fmt.Printf("Raw data %s\n", data)
 	fmt.Printf("Got order: %#v\n", order)
+
+	return Reply{quote}
+}
+
+func handler(rw http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		fmt.Printf("error reading body: %v\n", err)
+		rw.WriteHeader(204)
+		return
+	}
+
+	reply := calculateQuote(body)
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(200)
 	encoder := json.NewEncoder(rw)
-	encoder.Encode(Reply{quote})
+	encoder.Encode(reply)
 }
