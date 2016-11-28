@@ -51,7 +51,7 @@ var CountryRisk = map[string]float64{
 const SkiingPrice = 24.0
 
 func isFamilyDiscount(order Order) bool {
-	if len(order.TravellerAges) != 4 {
+	if len(order.TravellerAges) >= 4 {
 		return false
 	}
 
@@ -65,7 +65,7 @@ func isFamilyDiscount(order Order) bool {
 		}
 	}
 
-	return adults == 2 && children == 2
+	return adults >= 2 && children >= 2
 }
 
 func getAgeRisk(order Order) float64 {

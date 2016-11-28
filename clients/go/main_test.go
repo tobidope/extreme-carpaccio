@@ -11,6 +11,11 @@ func TestCalculateQuote(t *testing.T) {
 	if reply.Quote != 267.8399999999999 {
 		t.Fail()
 	}
+
+	data = []byte(`{"country":"ES","departureDate":"2016-12-02","returnDate":"2016-12-31","travellerAges":[73,54],"options":[],"cover":"Basic"}`)
+	if reply.Quote != 108,58 {
+		t.Fail()
+	}
 }
 
 func TestParseFeedback(t *testing.T) {
