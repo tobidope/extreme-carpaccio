@@ -123,21 +123,15 @@ func (order *Order) getAgeRisk() float64 {
 	return sum
 }
 
-func calculateQuote(data []byte) Reply {
-	var order Order
-	err := json.Unmarshal(data, &order)
-	if err != nil {
-		fmt.Printf("Error while parsing order: %v\n", err)
-	}
-	lastBody = data
+func calculateQuote(order Order) Reply {
 	lastOrder = order
 	timeLayout := "2006-01-02"
 	returnDate, _ := time.Parse(timeLayout, order.ReturnDate)
 	departureDate, _ := time.Parse(timeLayout, order.DepartureDate)
 	countryRisk := 1.0
 
-	if order.Country != "" {
-		countryRisk = CountryRisk[order.Country]
+	if value, ok := CountryRisk[order.Country]; ok { {
+		countryRisk = value
 	}
 
 	numberOfDays := returnDate.Sub(departureDate).Hours() / 24
@@ -174,7 +168,13 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Printf("Got request\n")
-	reply := calculateQuote(body)
+	lastBody = data
+	var order Order
+	err := json.Unmarshal(data, &order)
+	if err != nil {
+		fmt.Printf("Error while parsing order: %v\n", err)
+	}
+	reply := calculateQuote(order)
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(200)
