@@ -12,3 +12,8 @@ type Order struct {
 type Reply struct {
 	Quote float64 `json:"quote"`
 }
+
+type Feedback struct {
+	Message string `json:"message"`
+	Type string `json:"type"`
+}

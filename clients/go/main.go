@@ -8,6 +8,9 @@ import (
 	"fmt"
 )
 
+var lastRequest []byte
+var lastOrder Order
+
 func main() {
 	http.HandleFunc("/quote", handler)
 	http.HandleFunc("/feedback", func (rw http.ResponseWriter, req *http.Request) {
@@ -20,7 +23,11 @@ func main() {
 			return
 		}
 
-		fmt.Printf("Feedback: %s\n", body)
+		var feedback Feedback
+		json.Unmarshal(body, &feedback)
+		if feedback.Type != "WIN" {
+			fmt.Printf("Feedback: %s\n", feedback)	
+		}
 
 		rw.WriteHeader(200)
 	})
@@ -65,6 +72,8 @@ func getAgeRisk(order Order) float64 {
 func calculateQuote(data []byte) Reply {
 	var order Order
 	json.Unmarshal(data, &order)
+	lastOrder = order
+	lastRequest = body
 	timeLayout := "2006-01-02"
 	returnDate, _ :=  time.Parse(timeLayout, order.ReturnDate)
 	departureDate, _ := time.Parse(timeLayout, order.DepartureDate)
