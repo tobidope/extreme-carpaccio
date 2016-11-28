@@ -67,7 +67,7 @@ const SkiingPrice = 28.0
 const ChildrenAge = 15
 const SeniorAge = 60
 
-func isFamilyDiscount(order Order) bool {
+func (order *Order) hasFamilyDiscount() bool {
 	if len(order.TravellerAges) >= 4 {
 		return false
 	}
@@ -104,7 +104,7 @@ func unknownDiscount(order Order) bool {
 	return len(order.TravellerAges) == 2
 }
 
-func getAgeRisk(order Order) float64 {
+func (order *Order) getAgeRisk() float64 {
 	sum := 0.0
 	for _, age := range order.TravellerAges {
 		if age < 18 {
@@ -141,12 +141,12 @@ func calculateQuote(data []byte) Reply {
 	}
 
 	numberOfDays := returnDate.Sub(departureDate).Hours() / 24
-	quote := CoverRisk[order.Cover] * countryRisk * numberOfDays * getAgeRisk(order)
+	quote := CoverRisk[order.Cover] * countryRisk * numberOfDays * order.getAgeRisk()
 	if len(order.Options) > 0 && order.Options[0] == "Skiing" {
 		quote += SkiingPrice
 	}
 
-	if isFamilyDiscount(order) {
+	if order.hasFamilyDiscount() {
 		quote = 0.8 * quote
 	}
 
@@ -155,9 +155,9 @@ func calculateQuote(data []byte) Reply {
 	}
 
 	/*
-	if moreChildrenThanAdults(order) {
-		quote = 1.15 * quote
-	}
+		if moreChildrenThanAdults(order) {
+			quote = 1.15 * quote
+		}
 	*/
 
 	return Reply{quote}
