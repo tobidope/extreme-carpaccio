@@ -1,12 +1,12 @@
 package main
 
 type Order struct {
-	DepartureDate string `json:"departureDate"`
-	ReturnDate string `json:"returnDate"`
-	TravellerAges []int `json:"travellerAges"`
-	Cover string `json:"cover"`
-	Country string `json:"country"`
-	Options []string `json:"options"`
+	DepartureDate string   `json:"departureDate"`
+	ReturnDate    string   `json:"returnDate"`
+	TravellerAges []int    `json:"travellerAges"`
+	Cover         string   `json:"cover"`
+	Country       string   `json:"country"`
+	Options       []string `json:"options"`
 }
 
 type Reply struct {
@@ -15,5 +15,5 @@ type Reply struct {
 
 type Feedback struct {
 	Message string `json:"message"`
-	Type string `json:"type"`
+	Type    string `json:"type"`
 }

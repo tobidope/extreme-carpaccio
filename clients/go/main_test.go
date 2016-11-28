@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 )
 
 func TestCalculateQuote(t *testing.T) {
@@ -11,9 +11,12 @@ func TestCalculateQuote(t *testing.T) {
 	if reply.Quote != 267.8399999999999 {
 		t.Fail()
 	}
+}
 
-	data = []byte(`{"country":"ES","departureDate":"2016-12-02","returnDate":"2016-12-31","travellerAges":[73,54],"options":[],"cover":"Basic"}`)
-	if reply.Quote != 108,58 {
+func TestUnknownDiscount(t *testing.T) {
+	data := `{"country":"ES","departureDate":"2016-12-02","returnDate":"2016-12-31","travellerAges":[73,54],"options":[],"cover":"Basic"}`
+	reply := calculateQuote([]byte(data))
+	if reply.Quote != 108.58 {
 		t.Fail()
 	}
 }
@@ -24,6 +27,6 @@ func TestParseFeedback(t *testing.T) {
 	json.Unmarshal(data, &feedback)
 	if feedback.Message != "Congrats MrRobot, your answer ({quote=159.12}) was right !-> You just earned 100.0" ||
 		feedback.Type != "WIN" {
-			t.Fail()
+		t.Fail()
 	}
 }
