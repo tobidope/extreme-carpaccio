@@ -1,12 +1,14 @@
 package main
 
 type Order struct {
-	Prices     []float32
-	Quantities []int
-	Country    string
-	Reduction  string
+	DepartureDate string `json:"departureDate"`
+	ReturnDate string `json:"returnDate"`
+	TravellerAges []int `json:"travellerAges"`
+	Cover string `json:"cover"`
+	Country string `json:"country"`
+	Options []string `json:"options"`
 }
 
 type Reply struct {
-	Total float32 `json:"total"`
+	Quote float64 `json:"total"`
 }

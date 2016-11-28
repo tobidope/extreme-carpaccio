@@ -1,15 +1,15 @@
-package main
+---------package main
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-
+	"time"
 	"fmt"
 )
 
 func main() {
-	http.HandleFunc("/order", handler)
+	http.HandleFunc("/", handler)
 	http.HandleFunc("/feedback", func (rw http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
@@ -24,7 +24,42 @@ func main() {
 
 		rw.WriteHeader(200)
 	})
-	http.ListenAndServe(":6666", nil)
+	http.ListenAndServe(":3000", nil)
+}
+
+var CoverRisk = map[string]float64{
+	"Basic":  1.8,
+	"Extra": 2.4,
+	"Premier": 4.2,
+}
+
+var CountryRisk = map[string]float64{
+	"FR": 1.0,
+	"ES": 1.0,
+	"BE": 1.1,
+	"FI": 0.8,
+	"EL": 0.9, //Greece
+}
+
+const SkiingPrice = 24.0
+
+func getAgeRisk(order Order) float64 {
+	sum := 0.0
+	for _, age := range order.TravellerAges {
+		if  age < 18 {
+			sum += 0.5
+		} else if age <=45 {
+			sum += 1.0
+		} else if  age <= 65 {
+			sum += 1.2
+		} else if age <= 75 {
+			sum +=  1.4 
+		} else {
+			sum += 2.0
+		}
+	}
+
+	return sum
 }
 
 func handler(rw http.ResponseWriter, req *http.Request) {
@@ -39,11 +74,27 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	var order Order
 	json.Unmarshal(body, &order)
+	timeLayout := "2006-01-02"
+	returnDate, _ :=  time.Parse(timeLayout, order.ReturnDate)
+	departureDate, _ := time.Parse(timeLayout, order.DepartureDate)
+	countryRisk := 1.0
+	if order.Country != "" {
+		countryRisk = CountryRisk[order.Country]
+	}
 
+	numberOfDays := returnDate.Sub(departureDate).Hours()/24
+	fmt.Printf("Number of days %v: \n", numberOfDays)
+	quote := CoverRisk[order.Cover] * countryRisk * numberOfDays * getAgeRisk(order)
+	if len(order.Options) > 0 && order.Options[0] == "Skiing" {
+		quote += SkiingPrice
+	}
+	//quote := 0.0
+
+	fmt.Printf("Raw data %s\n", body)
 	fmt.Printf("Got order: %#v\n", order)
 
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(200)
-//	encoder := json.NewEncoder(rw)
-//	encoder.Encode(Reply{0})
+	encoder := json.NewEncoder(rw)
+	encoder.Encode(Reply{quote})
 }
