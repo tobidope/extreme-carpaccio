@@ -50,6 +50,24 @@ var CountryRisk = map[string]float64{
 
 const SkiingPrice = 24.0
 
+func isFamilyDiscount(order Order) bool {
+	if len(order.TravellerAges) != 4 {
+		return false
+	}
+
+	adults := 0
+	children := 0
+	for _, age := range order.TravellerAges {
+		if age < 18 {
+			children += 1
+		} else {
+			adults += 1
+		}
+	}
+
+	return adults == 2 && children == 2
+}
+
 func getAgeRisk(order Order) float64 {
 	sum := 0.0
 	for _, age := range order.TravellerAges {
@@ -72,8 +90,6 @@ func getAgeRisk(order Order) float64 {
 func calculateQuote(data []byte) Reply {
 	var order Order
 	json.Unmarshal(data, &order)
-	lastOrder = order
-	lastRequest = body
 	timeLayout := "2006-01-02"
 	returnDate, _ :=  time.Parse(timeLayout, order.ReturnDate)
 	departureDate, _ := time.Parse(timeLayout, order.DepartureDate)
@@ -87,6 +103,10 @@ func calculateQuote(data []byte) Reply {
 	quote := CoverRisk[order.Cover] * countryRisk * numberOfDays * getAgeRisk(order)
 	if len(order.Options) > 0 && order.Options[0] == "Skiing" {
 		quote += SkiingPrice
+	}
+
+	if isFamilyDiscount(order) {
+		quote = 0.8 * quote
 	}
 	//quote := 0.0
 
